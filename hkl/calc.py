@@ -102,6 +102,8 @@ class CalcRecip(object):
         self._axis_name_to_renamed = {}
         self._axis_name_to_original = {}
         self._inverted_axes = inverted_axes
+        # the cache of axes available
+        self._axes_cache = dict()
 
         try:
             self._factory = hkl_module.factories()[dtype]
@@ -405,10 +407,14 @@ class CalcRecip(object):
         return self._unit_name
 
     def __getitem__(self, axis):
-        return Parameter(self._get_axis_by_name(axis),
+        if axis in self._axes_cache:
+            return self._axes_cache[axis]
+        else:
+            self._axes_cache[axis] = Parameter(self._get_axis_by_name(axis),
                          units=self._unit_name,
                          name=axis,
                          inverted=axis in self._inverted_axes)
+            return self._axes_cache[axis]
 
     def __setitem__(self, axis, value):
         param = self[axis]
